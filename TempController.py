@@ -13,7 +13,11 @@ class TempController(QWidget):
     def __init__(self, parent=None):
         super(TempController, self).__init__(parent)
         self.ui = Ui_TempController()
-        self.ser = serial.Serial('/dev/tty.usbserial', 9600)
+        serialLocation = '/dev/tty.usbserial'
+        try:
+            self.ser = serial.Serial(serialLocation, 9600)
+        except:
+            print("Could not open serial:", serialLocation)
 
         self.ui.setupUi(self)
         self.connect_signals()
