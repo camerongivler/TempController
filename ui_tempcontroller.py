@@ -1,0 +1,91 @@
+# -*- coding: utf-8 -*-
+
+# Form implementation generated from reading ui file 'tempcontroller.ui'
+#
+# Created by: PyQt5 UI code generator 5.5
+#
+# WARNING! All changes made in this file will be lost!
+
+from PyQt5 import QtCore, QtGui, QtWidgets
+
+class Ui_TempController(object):
+    def setupUi(self, TempController):
+        TempController.setObjectName("TempController")
+        TempController.resize(519, 565)
+        self.horizontalLayout = QtWidgets.QHBoxLayout(TempController)
+        self.horizontalLayout.setObjectName("horizontalLayout")
+        self.frame_2 = QtWidgets.QFrame(TempController)
+        self.frame_2.setFrameShape(QtWidgets.QFrame.NoFrame)
+        self.frame_2.setFrameShadow(QtWidgets.QFrame.Raised)
+        self.frame_2.setObjectName("frame_2")
+        self.verticalLayout_2 = QtWidgets.QVBoxLayout(self.frame_2)
+        self.verticalLayout_2.setObjectName("verticalLayout_2")
+        spacerItem = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
+        self.verticalLayout_2.addItem(spacerItem)
+        self.groupBox = QtWidgets.QGroupBox(self.frame_2)
+        self.groupBox.setObjectName("groupBox")
+        self.horizontalLayout_2 = QtWidgets.QHBoxLayout(self.groupBox)
+        self.horizontalLayout_2.setObjectName("horizontalLayout_2")
+        spacerItem1 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
+        self.horizontalLayout_2.addItem(spacerItem1)
+        self.TempSpinBox = QtWidgets.QDoubleSpinBox(self.groupBox)
+        self.TempSpinBox.setObjectName("TempSpinBox")
+        self.horizontalLayout_2.addWidget(self.TempSpinBox)
+        self.TempSetButton = QtWidgets.QPushButton(self.groupBox)
+        self.TempSetButton.setObjectName("TempSetButton")
+        self.horizontalLayout_2.addWidget(self.TempSetButton)
+        spacerItem2 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
+        self.horizontalLayout_2.addItem(spacerItem2)
+        self.verticalLayout_2.addWidget(self.groupBox)
+        self.groupBox_3 = QtWidgets.QGroupBox(self.frame_2)
+        self.groupBox_3.setObjectName("groupBox_3")
+        self.horizontalLayout_3 = QtWidgets.QHBoxLayout(self.groupBox_3)
+        self.horizontalLayout_3.setObjectName("horizontalLayout_3")
+        spacerItem3 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
+        self.horizontalLayout_3.addItem(spacerItem3)
+        self.HumiditySpinBox = QtWidgets.QDoubleSpinBox(self.groupBox_3)
+        self.HumiditySpinBox.setObjectName("HumiditySpinBox")
+        self.horizontalLayout_3.addWidget(self.HumiditySpinBox)
+        self.HumiditySetButton = QtWidgets.QPushButton(self.groupBox_3)
+        self.HumiditySetButton.setObjectName("HumiditySetButton")
+        self.horizontalLayout_3.addWidget(self.HumiditySetButton)
+        spacerItem4 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
+        self.horizontalLayout_3.addItem(spacerItem4)
+        self.verticalLayout_2.addWidget(self.groupBox_3)
+        spacerItem5 = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
+        self.verticalLayout_2.addItem(spacerItem5)
+        self.horizontalLayout.addWidget(self.frame_2)
+        self.frame = QtWidgets.QFrame(TempController)
+        self.frame.setMinimumSize(QtCore.QSize(150, 0))
+        self.frame.setMaximumSize(QtCore.QSize(175, 16777215))
+        self.frame.setFrameShape(QtWidgets.QFrame.NoFrame)
+        self.frame.setFrameShadow(QtWidgets.QFrame.Raised)
+        self.frame.setObjectName("frame")
+        self.verticalLayout = QtWidgets.QVBoxLayout(self.frame)
+        self.verticalLayout.setObjectName("verticalLayout")
+        spacerItem6 = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
+        self.verticalLayout.addItem(spacerItem6)
+        self.groupBox_2 = QtWidgets.QGroupBox(self.frame)
+        self.groupBox_2.setObjectName("groupBox_2")
+        self.verticalLayout_3 = QtWidgets.QVBoxLayout(self.groupBox_2)
+        self.verticalLayout_3.setObjectName("verticalLayout_3")
+        self.listWidget = QtWidgets.QListWidget(self.groupBox_2)
+        self.listWidget.setObjectName("listWidget")
+        self.verticalLayout_3.addWidget(self.listWidget)
+        self.verticalLayout.addWidget(self.groupBox_2)
+        spacerItem7 = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
+        self.verticalLayout.addItem(spacerItem7)
+        self.horizontalLayout.addWidget(self.frame)
+
+        self.retranslateUi(TempController)
+        QtCore.QMetaObject.connectSlotsByName(TempController)
+
+    def retranslateUi(self, TempController):
+        _translate = QtCore.QCoreApplication.translate
+        TempController.setWindowTitle(_translate("TempController", "Temperature Controller"))
+        self.groupBox.setTitle(_translate("TempController", "Temperature Setpoint"))
+        self.TempSetButton.setText(_translate("TempController", "Set Temperature"))
+        self.groupBox_3.setTitle(_translate("TempController", "Humidity Threshold"))
+        self.HumiditySetButton.setText(_translate("TempController", "Set Humidity"))
+        self.groupBox_2.setTitle(_translate("TempController", "Lasers"))
+
