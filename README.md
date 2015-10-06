@@ -19,7 +19,7 @@
 **Programmer:** Arduino as ISP
 
 ##How to compile QT
-**Run the following Command: **
+**Run the following Command:** 
 pyuic5 tempcontroller.ui > ui_tempcontroller.py
 
 **Note:** You may need to install pyuic5
