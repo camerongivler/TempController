@@ -22,13 +22,8 @@ class TempController(QWidget):
     def __init__(self, parent=None):
         super(TempController, self).__init__(parent)
         self.ui = Ui_TempController()
-        serialLocation = '/dev/tty.usbserial'
-        try:
-            self.ser = serial.Serial(serialLocation, 9600)
-        except:
-            print("Could not open serial:", serialLocation)
-
         self.ui.setupUi(self)
+
         dc = MyStaticMplCanvas(self.ui.frame_2)
         self.ui.verticalLayout_2.addWidget(dc)
 
@@ -36,11 +31,22 @@ class TempController(QWidget):
 
     @pyqtSlot()
     def set_temperature(self):
-        print("Temperature:", self.ui.TempSpinBox.value())
+        print "Temperature:", self.ui.TempSpinBox.value()
 
     @pyqtSlot()
     def set_humidity(self):
-        print("Humidity:", self.ui.HumiditySpinBox.value())
+        print "Humidity:", self.ui.HumiditySpinBox.value()
+
+    @pyqtSlot()
+    def set_humidity(self):
+        print "Connect to:", self.ui.ConnectField.text()
+        serialLocation = self.ui.ConnectField.text()
+        try:
+            self.ser = serial.Serial(serialLocation, 9600)
+        except:
+            print("Could not open serial:", serialLocation)
+            return
+        self.ser.write("Hello\n")
 
     def connect_signals(self):
         self.ui.TempSetButton.clicked.connect(self.set_temperature)

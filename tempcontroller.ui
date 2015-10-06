@@ -127,6 +127,29 @@
        </widget>
       </item>
       <item>
+       <widget class="QGroupBox" name="groupBox_4">
+        <property name="title">
+         <string>Connect To Arduino</string>
+        </property>
+        <layout class="QHBoxLayout" name="horizontalLayout_4">
+         <item>
+          <widget class="QLineEdit" name="ConnectField">
+           <property name="placeholderText">
+            <string>/dev/tty.usbserial</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="pushButton">
+           <property name="text">
+            <string>Connect</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </item>
+      <item>
        <spacer name="verticalSpacer_3">
         <property name="orientation">
          <enum>Qt::Vertical</enum>
