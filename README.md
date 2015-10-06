@@ -4,7 +4,8 @@
 ##Dependencies
 Python 2.7
 PyQt5
-matplotlib
+matplotlib:
+
    pip install matplotlib
 
 ##How to upload to Arduino
