@@ -1,5 +1,5 @@
 #TempController
-###Arduino Temperature Controller
+####Arduino Temperature Controller
 
 ##Dependencies
 **Python 2.7**
