@@ -14,6 +14,6 @@
 ###Upload settings
 **Board:** Arduino Pro or Pro Mini (5V, 16MHz) w/ ATmega328
 
-**Serial Port:** /dev/ttyUSB0
+**Serial Port:** /dev/ttyUSB0 (On Ubuntu)
 
 **Programmer:** Arduino as ISP
