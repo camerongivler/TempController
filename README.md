@@ -2,11 +2,13 @@
 ###Arduino Temperature Controller
 
 ##Dependencies
-Python 2.7
-PyQt5
-matplotlib:
+**Python 2.7**
 
-   pip install matplotlib
+**PyQt5**
+
+**matplotlib:**
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;pip install matplotlib
 
 ##How to upload to Arduino
 ###Upload settings
