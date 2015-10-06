@@ -7,6 +7,7 @@
 **PyQt5**
 
 **matplotlib:**
+
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;pip install matplotlib
 
 ##How to upload to Arduino
