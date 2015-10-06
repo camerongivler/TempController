@@ -38,19 +38,20 @@ class TempController(QWidget):
         print "Humidity:", self.ui.HumiditySpinBox.value()
 
     @pyqtSlot()
-    def set_humidity(self):
+    def connect_to_arduino(self):
         print "Connect to:", self.ui.ConnectField.text()
         serialLocation = self.ui.ConnectField.text()
         try:
             self.ser = serial.Serial(serialLocation, 9600)
         except:
-            print("Could not open serial:", serialLocation)
+            print "Could not open serial:", serialLocation
             return
         self.ser.write("Hello\n")
 
     def connect_signals(self):
         self.ui.TempSetButton.clicked.connect(self.set_temperature)
         self.ui.HumiditySetButton.clicked.connect(self.set_humidity)
+        self.ui.connectButton.clicked.connect(self.connect_to_arduino)
 
 class MyMplCanvas(FigureCanvas):
     """Ultimately, this is a QWidget (as well as a FigureCanvasAgg, etc.)."""
