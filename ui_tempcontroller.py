@@ -99,7 +99,7 @@ class Ui_TempController(object):
         self.groupBox_3.setTitle(_translate("TempController", "Humidity Threshold"))
         self.HumiditySetButton.setText(_translate("TempController", "Set Humidity"))
         self.groupBox_4.setTitle(_translate("TempController", "Connect To Arduino"))
-        self.ConnectField.setPlaceholderText(_translate("TempController", "/dev/tty.usbserial"))
+        self.ConnectField.setPlaceholderText(_translate("TempController", "/dev/ttyUSB0"))
         self.connectButton.setText(_translate("TempController", "Connect"))
         self.groupBox_2.setTitle(_translate("TempController", "Lasers"))
 

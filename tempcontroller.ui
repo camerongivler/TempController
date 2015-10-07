@@ -135,7 +135,7 @@
          <item>
           <widget class="QLineEdit" name="ConnectField">
            <property name="placeholderText">
-            <string>/dev/tty.usbserial</string>
+            <string>/dev/ttyUSB0</string>
            </property>
           </widget>
          </item>

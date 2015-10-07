@@ -41,6 +41,8 @@ class TempController(QWidget):
     def connect_to_arduino(self):
         print "Connect to:", self.ui.ConnectField.text()
         serialLocation = self.ui.ConnectField.text()
+        if not serialLocation:
+            serialLocation = "/dev/ttyUSB0"
         try:
             self.ser = serial.Serial(serialLocation, 9600)
         except:
