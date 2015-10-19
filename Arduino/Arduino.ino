@@ -31,11 +31,23 @@ boolean serialEvent() {
     inputString += inChar;
     if (inChar == '\n') {
       // This is where the command would be handled
-      Serial.println(inputString);
+      if(inputString == "get data\r\n") {
+        sendData();
+      }
       // End Command Handle
       inputString = "";
       return true;
     }
   }
   return false;
+}
+
+void sendData() {
+  Serial.println("Data");
+  Serial.print(tempValues[0]);
+  for(int i = 0; i < numValues - 1; i++) {
+    Serial.print(",");
+    Serial.print(tempValues[i]);
+  }
+  Serial.println();
 }

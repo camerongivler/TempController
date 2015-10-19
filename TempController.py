@@ -3,7 +3,10 @@
 
 import sys
 import random
+import Queue
 import matplotlib
+import threading
+import time
 matplotlib.use("Qt5Agg")
 from PyQt5 import QtCore
 from PyQt5.QtCore import pyqtSlot
@@ -23,6 +26,7 @@ class TempController(QWidget):
         super(TempController, self).__init__(parent)
         self.ui = Ui_TempController()
         self.ui.setupUi(self)
+        self.serialManager = SerialManager()
 
         dc = MyStaticMplCanvas(self.ui.frame_2)
         self.ui.verticalLayout_2.addWidget(dc)
@@ -39,21 +43,20 @@ class TempController(QWidget):
 
     @pyqtSlot()
     def connect_to_arduino(self):
-        print "Connect to:", self.ui.ConnectField.text()
         serialLocation = self.ui.ConnectField.text()
         if not serialLocation:
             serialLocation = "/dev/ttyUSB0"
-        try:
-            self.ser = serial.Serial(serialLocation, 9600)
-        except:
-            print "Could not open serial:", serialLocation
-            return
-        self.ser.write("Hello\n")
+        print "Connect to:", serialLocation
+        self.serialManager.connect(serialLocation);
 
     def connect_signals(self):
         self.ui.TempSetButton.clicked.connect(self.set_temperature)
         self.ui.HumiditySetButton.clicked.connect(self.set_humidity)
         self.ui.connectButton.clicked.connect(self.connect_to_arduino)
+
+    def closeEvent(self, event):
+        if(self.serialManager):
+            self.serialManager.endSerial()
 
 class MyMplCanvas(FigureCanvas):
     """Ultimately, this is a QWidget (as well as a FigureCanvasAgg, etc.)."""
@@ -102,6 +105,64 @@ class MyDynamicMplCanvas(MyMplCanvas):
 
         self.axes.plot([0, 1, 2, 3], l, 'r')
         self.draw()
+
+class SerialManager:
+    def __init__(self):
+        self.timer = QtCore.QTimer()
+        self.queue = Queue.Queue()
+        self.ser = None
+        self.running = False
+        self.thread = None
+
+    def connect(self, location):
+        if(self.ser or self.running or (self.thread and self.thread.isAlive())):
+            self.endSerial()
+
+        try:
+            self.ser = serial.Serial(location, 9600, timeout=0.5)
+        except:
+            print "Could not open serial:", location
+            return False
+
+        self.timer.timeout.connect(self.periodicCall)
+        self.timer.start(100)
+
+        self.running = True
+        self.thread = threading.Thread(target=self.workerThread)
+        self.thread.start()
+
+        self.writeLine("get data")
+
+        return True
+
+    def periodicCall(self):
+        while self.queue.qsize():
+            try:
+                msg = self.queue.get(0)
+                print msg.split(",")
+            except Queue.Empty: pass
+
+        if not self.running:
+            self.timer.stop()
+            self.timer.timeout.disconnect()
+
+    def writeLine(self, msg):
+        self.ser.write(msg + "\r\n")
+
+    def endSerial(self):
+        self.running = False
+        self.thread.join()
+        self.thread = None
+
+    def workerThread(self):
+        while self.running:
+            msg = self.ser.readline()
+            if (msg):
+                self.queue.put(msg.rstrip())
+            else: pass
+            time.sleep(0.1)
+        self.ser.close()
+        self.ser = None
 
 if __name__ == '__main__':
     import sys
