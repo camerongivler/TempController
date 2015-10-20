@@ -8,7 +8,7 @@ String inputString = "";  //This is global in case serialEvent is called mid-tra
 
 void setup() {
   Serial.begin(9600);
-  tempValues[0] = analogRead(inputPin);
+  tempValues[0] = analogRead(inputPin) / 204.6;
 }
 
 void loop() {
