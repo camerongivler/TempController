@@ -57,8 +57,7 @@ class TempController(QWidget):
             exportLocation = "tempData.csv"
         print "exporting to:", exportLocation
         with open(exportLocation, 'wb') as csvfile:
-            writer = csv.writer(csvfile, delimiter=' ',
-                            quotechar='|', quoting=csv.QUOTE_MINIMAL)
+            writer = csv.writer(csvfile, delimiter=',')
             writer.writerow(self.currentTimes)
             writer.writerow(self.currentData)
 
