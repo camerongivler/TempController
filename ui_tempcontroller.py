@@ -11,7 +11,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_TempController(object):
     def setupUi(self, TempController):
         TempController.setObjectName("TempController")
-        TempController.resize(519, 565)
+        TempController.resize(703, 685)
         self.horizontalLayout = QtWidgets.QHBoxLayout(TempController)
         self.horizontalLayout.setObjectName("horizontalLayout")
         self.frame_2 = QtWidgets.QFrame(TempController)

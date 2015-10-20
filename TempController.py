@@ -15,6 +15,7 @@ from PyQt5.QtWidgets import QApplication, QWidget, QMainWindow, QMenu, QVBoxLayo
 from numpy import arange, sin, pi
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
+import matplotlib.pyplot as plt
 
 from ui_tempcontroller import Ui_TempController
 
@@ -26,10 +27,14 @@ class TempController(QWidget):
         super(TempController, self).__init__(parent)
         self.ui = Ui_TempController()
         self.ui.setupUi(self)
-        self.serialManager = SerialManager()
+        self.serialManager = SerialManager(self.updateGraph)
 
-        dc = MyStaticMplCanvas(self.ui.frame_2)
-        self.ui.verticalLayout_2.addWidget(dc)
+        self.requestDataTimer = QtCore.QTimer()
+        self.requestDataTimer.timeout.connect(self.requestData)
+        self.requestDataTimer.start(1000)
+
+        self.dc = MyMplCanvas(self.ui.frame_2, 10, 10)
+        self.ui.verticalLayout_2.addWidget(self.dc)
 
         self.connect_signals()
 
@@ -54,21 +59,28 @@ class TempController(QWidget):
         self.ui.HumiditySetButton.clicked.connect(self.set_humidity)
         self.ui.connectButton.clicked.connect(self.connect_to_arduino)
 
+    @pyqtSlot()
+    def requestData(self):
+        self.serialManager.writeLine("get data")
+
+    def updateGraph(self, data):
+        x = range(0, len(data))
+        self.dc.graphData(x, data)
+
     def closeEvent(self, event):
         if(self.serialManager):
             self.serialManager.endSerial()
 
 class MyMplCanvas(FigureCanvas):
     """Ultimately, this is a QWidget (as well as a FigureCanvasAgg, etc.)."""
-    def __init__(self, parent=None, width=5, height=4, dpi=100):
-        fig = Figure(figsize=(width, height), dpi=dpi)
+    def __init__(self, parent=None, width=1, height=1, dpi=100):
+        fig = Figure(dpi=dpi)
         self.axes = fig.add_subplot(111)
-        # We want the axes cleared every time plot() is called
+        self.axes.set_xlabel("Minutes in the past")
+        self.axes.set_ylabel("Voltage reading")
         self.axes.hold(False)
+        plt.gcf().subplots_adjust(bottom=0.25)
 
-        self.compute_initial_figure()
-
-        #
         FigureCanvas.__init__(self, fig)
         self.setParent(parent)
 
@@ -77,45 +89,24 @@ class MyMplCanvas(FigureCanvas):
                 QSizePolicy.Expanding)
         FigureCanvas.updateGeometry(self)
 
-    def compute_initial_figure(self):
-        pass
-
-
-class MyStaticMplCanvas(MyMplCanvas):
-    """Simple canvas with a sine plot."""
-    def compute_initial_figure(self):
-        t = arange(0.0, 3.0, 0.01)
-        s = sin(2*pi*t)
-        self.axes.plot(t, s)
-
-class MyDynamicMplCanvas(MyMplCanvas):
-    """A canvas that updates itself every second with a new plot."""
-    def __init__(self, *args, **kwargs):
-        MyMplCanvas.__init__(self, *args, **kwargs)
-        timer = QtCore.QTimer(self)
-        timer.timeout.connect(self.update_figure)
-        timer.start(1000)
-
-    def compute_initial_figure(self):
-        self.axes.plot([0, 1, 2, 3], [1, 2, 0, 4], 'r')
-
-    def update_figure(self):
-        # Build a list of 4 random integers between 0 and 10 (both inclusive)
-        l = [random.randint(0, 10) for i in range(4)]
-
-        self.axes.plot([0, 1, 2, 3], l, 'r')
+    def graphData(self, x, y):
+        self.axes.plot(x, y, 'r')
+        self.axes.set_xlabel("Minutes in the past")
+        self.axes.set_ylabel("Voltage reading")
+        self.axes.set_ylim([0, 5])
         self.draw()
 
 class SerialManager:
-    def __init__(self):
+    def __init__(self, updateGraph):
         self.timer = QtCore.QTimer()
         self.queue = Queue.Queue()
         self.ser = None
         self.running = False
         self.thread = None
+        self.updateGraph = updateGraph
 
     def connect(self, location):
-        if(self.ser or self.running or (self.thread and self.thread.isAlive())):
+        if self.ser or self.running or self.thread:
             self.endSerial()
 
         try:
@@ -131,34 +122,44 @@ class SerialManager:
         self.thread = threading.Thread(target=self.workerThread)
         self.thread.start()
 
-        self.writeLine("get data")
-
         return True
 
+    @pyqtSlot()
     def periodicCall(self):
         while self.queue.qsize():
             try:
                 msg = self.queue.get(0)
-                print msg.split(",")
             except Queue.Empty: pass
+            #print msg
+            if msg == "data":
+                while not self.queue.qsize() and self.running: # wait until the data arrives
+                    time.sleep(0.01)
+                try:
+                    self.getData(self.queue.get(0))
+                except Queue.Empty: pass
 
         if not self.running:
             self.timer.stop()
             self.timer.timeout.disconnect()
 
     def writeLine(self, msg):
-        self.ser.write(msg + "\r\n")
+        if self.ser:
+            self.ser.write(msg + "\r\n")
+
+    def getData(self, msg):
+        self.updateGraph(msg.split(","))
 
     def endSerial(self):
         self.running = False
-        self.thread.join()
-        self.thread = None
+        if self.thread:
+            self.thread.join()
+            self.thread = None
 
     def workerThread(self):
         while self.running:
-            msg = self.ser.readline()
-            if (msg):
-                self.queue.put(msg.rstrip())
+            msg = self.ser.readline().rstrip()
+            if msg:
+                self.queue.put(msg)
             else: pass
             time.sleep(0.1)
         self.ser.close()
