@@ -46,7 +46,7 @@ boolean serialEvent() {
 void sendData() {
   Serial.println("data");
   Serial.print(tempValues[0]);
-  for(int i = 1; i < numValues - 1; i++) {
+  for(int i = 1; i < numValues; i++) {
     Serial.print(",");
     Serial.print(tempValues[i]);
   }
