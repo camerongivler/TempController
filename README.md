@@ -6,15 +6,18 @@
 
 **PyQt5**
 
-http://pyqt.sourceforge.net/Docs/PyQt5/installation.html
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;http://pyqt.sourceforge.net/Docs/PyQt5/installation.html
 
 **matplotlib:**
 
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;sudo apt-get install python-dev python-pip libfreetype6-dev qt5-default
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;sudo apt-get install python-dev python-pip libfreetype6-dev qt5-default pyqt5-dev-tools
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;pip install matplotlib
 
 ##How to upload to Arduino
 ####Upload settings
+**Dependencies**
+sudo apt-get install arduino
+
 **Board:** Arduino Pro or Pro Mini (5V, 16MHz) w/ ATmega328
 
 **Serial Port:** /dev/ttyUSB0 (On Ubuntu)
@@ -24,5 +27,3 @@ http://pyqt.sourceforge.net/Docs/PyQt5/installation.html
 ##How to compile QT
 **Run the following Command:** 
 pyuic5 tempcontroller.ui > ui_tempcontroller.py
-
-**Note:** You may need to install pyuic5
