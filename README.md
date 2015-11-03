@@ -6,8 +6,11 @@
 
 **PyQt5**
 
+http://pyqt.sourceforge.net/Docs/PyQt5/installation.html
+
 **matplotlib:**
 
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;sudo apt-get install python-dev python-pip libfreetype6-dev qt5-default
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;pip install matplotlib
 
 ##How to upload to Arduino
