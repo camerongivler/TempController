@@ -13,6 +13,10 @@
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;sudo apt-get install python-dev python-pip libfreetype6-dev qt5-default pyqt5-dev-tools
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;pip install matplotlib
 
+**Serial Communications:**
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;You may need to run: sudo chmod 666 /dev/ttyUSB0
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;in order to communicate with the Arduino
+
 ##How to upload to Arduino
 ####Upload settings
 **Dependencies**

@@ -129,11 +129,11 @@ class SerialManager:
         if self.ser or self.running or self.thread:
             self.endSerial()
 
-        try:
-            self.ser = serial.Serial(location, 9600, timeout=0.5)
-        except:
-            print "Could not open serial:", location
-            return False
+        #try:
+        self.ser = serial.Serial(location, 9600, timeout=0.5)
+        #except:
+        #    print "Could not open serial:", location
+        #    return False
 
         self.timer.timeout.connect(self.periodicCall)
         self.timer.start(100)
