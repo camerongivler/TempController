@@ -112,11 +112,10 @@ class TempController(QWidget):
         self.ui.emailList.addItem(email)
 
     @pyqtSlot()
-    def deleteEmail(self):
-        self.sendAlert()
-        #listItems=self.ui.emailList.selectedItems()
-        #for item in listItems:
-        #   self.ui.emailList.takeItem(self.ui.emailList.row(item))
+    def deleteEmail(self):x
+        listItems=self.ui.emailList.selectedItems()
+        for item in listItems:
+           self.ui.emailList.takeItem(self.ui.emailList.row(item))
 
     def connect_signals(self):
         self.ui.tempSetButton.clicked.connect(self.set_temperature)
