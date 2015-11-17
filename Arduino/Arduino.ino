@@ -3,7 +3,8 @@ const unsigned long numSecsBetweenReads = 60;
 const unsigned long deltaSerialEvent = 100; // milliseconds
 const int inputPin = 23; //A0
 const int numValues = 120;
-float tempValues[numValues] = {0};
+float tempValues[numValues] = {
+  0};
 String inputString = "";  //This is global in case serialEvent is called mid-transmission
 
 void setup() {
@@ -43,6 +44,9 @@ boolean serialEvent() {
   return false;
 }
 
+// t = 1/(0.001284 + 2.364e-4 * log(V/I) + 9.304e-8 * log(V/I)^3)
+// I = 10mA?
+
 void sendData() {
   Serial.println("data");
   Serial.print(tempValues[0]);
@@ -52,3 +56,4 @@ void sendData() {
   }
   Serial.println();
 }
+

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import sys, random, Queue, matplotlib, threading, time, csv, serial
+import sys, random, Queue, matplotlib, threading, time, csv, serial, smtplib
 from datetime import datetime, timedelta
 matplotlib.use("Qt5Agg")
 from PyQt5 import QtCore
@@ -20,30 +20,51 @@ class TempController(QWidget):
         super(TempController, self).__init__(parent)
         self.ui = Ui_TempController()
         self.ui.setupUi(self)
-        self.serialManager = SerialManager(self.updateGraph)
+
+        self.tempChart = MyMplCanvas(self.ui.frame_2, 10, 10)
+        self.ui.verticalLayout_2.addWidget(self.tempChart)
+
+        self.humidityChart = MyMplCanvas(self.ui.frame_2, 10, 10)
+        self.ui.verticalLayout_5.addWidget(self.humidityChart)
+
+        self.serialManager = SerialManager(self.updateTempChart, self.updateHumidityChart)
 
         self.requestDataTimer = QtCore.QTimer()
         self.requestDataTimer.timeout.connect(self.requestData)
         self.requestDataTimer.start(5000)
 
-        self.dc = MyMplCanvas(self.ui.frame_2, 10, 10)
-        self.ui.verticalLayout_2.addWidget(self.dc)
-
         self.connect_signals()
 
-        self.currentData = []
-        self.currentTimes = []
+        self.tempData = []
+        self.tempTimes = []
+        self.humidityData = []
+        self.humidityTimes = []
+
+        self.alerted = False
+        self.turnedOff = False
+        self.alertHum = float('Inf')
 
     @pyqtSlot()
     def set_temperature(self):
-        print "Temperature:", self.ui.TempSpinBox.value()
+        print "Temperature:", self.ui.tempSpinBox.value()
+        self.serialManager.setTemp(self.ui.tempSpinBox.value())
 
     @pyqtSlot()
-    def set_humidity(self):
-        print "Humidity:", self.ui.HumiditySpinBox.value()
+    def set_warning_humidity(self):
+        print "Alert Humidity:", self.ui.warningThresholdSpinBox.value()
+        self.alertHum = self.ui.warningThresholdSpinBox.value()
+
+    @pyqtSlot()
+    def set_turn_off_humidity(self):
+        print "Turn off Humidity:", self.ui.turnOffThresholdSpinBox.value()
+        self.serialManager.setHumidity(self.ui.turnOffThresholdSpinBox.value())
 
     @pyqtSlot()
     def connect_to_arduino(self):
+        self.ui.connectButton.disconnect()
+        self.ui.connectButton.clicked.connect(self.disconnect_from_arduino)
+        self.ui.connectButton.setText("Disconnect")
+        self.ui.ConnectField.setDisabled(True)
         serialLocation = self.ui.ConnectField.text()
         if not serialLocation:
             serialLocation = "/dev/ttyUSB0"
@@ -51,33 +72,83 @@ class TempController(QWidget):
         self.serialManager.connect(serialLocation);
 
     @pyqtSlot()
-    def exportData(self):
-        exportLocation = self.ui.exportField.text()
+    def disconnect_from_arduino(self):
+        if(self.serialManager):
+            self.serialManager.endSerial()
+        self.ui.connectButton.disconnect()
+        self.ui.connectButton.clicked.connect(self.connect_to_arduino)
+        self.ui.connectButton.setText("Connect")
+        self.ui.ConnectField.setDisabled(False)
+
+    @pyqtSlot()
+    def exportTempData(self):
+        exportLocation = self.ui.tempExportField.text()
         if not exportLocation:
             exportLocation = "tempData.csv"
+        self.exportData(self.tempTimes, self.tempData, exportLocation)
+
+    @pyqtSlot()
+    def exportHumidityData(self):
+        exportLocation = self.ui.humidityExportField.text()
+        if not exportLocation:
+            exportLocation = "humidityData.csv"
+        self.exportData(self.humidityTimes, self.humidityData, exportLocation)
+
+    def exportData(self, times, data, exportLocation):
         print "exporting to:", exportLocation
         with open(exportLocation, 'wb') as csvfile:
             writer = csv.writer(csvfile, delimiter=',')
-            writer.writerow(self.currentTimes)
-            writer.writerow(self.currentData)
-
-    def connect_signals(self):
-        self.ui.TempSetButton.clicked.connect(self.set_temperature)
-        self.ui.HumiditySetButton.clicked.connect(self.set_humidity)
-        self.ui.connectButton.clicked.connect(self.connect_to_arduino)
-        self.ui.exportButton.clicked.connect(self.exportData)
+            writer.writerow(times)
+            writer.writerow(data)
 
     @pyqtSlot()
     def requestData(self):
         self.serialManager.writeLine("get data")
 
-    def updateGraph(self, data):
-        #x = range(0, len(data))
+    @pyqtSlot()
+    def addEmail(self):
+        email = self.ui.addEmailField.text()
+        self.ui.addEmailField.setText("")
+        self.ui.emailList.addItem(email)
+
+    @pyqtSlot()
+    def deleteEmail(self):
+        self.sendAlert()
+        #listItems=self.ui.emailList.selectedItems()
+        #for item in listItems:
+        #   self.ui.emailList.takeItem(self.ui.emailList.row(item))
+
+    def connect_signals(self):
+        self.ui.tempSetButton.clicked.connect(self.set_temperature)
+        self.ui.warningThresholdButton.clicked.connect(self.set_warning_humidity)
+        self.ui.turnOffThresholdButton.clicked.connect(self.set_turn_off_humidity)
+        self.ui.connectButton.clicked.connect(self.connect_to_arduino)
+        self.ui.tempExportButton.clicked.connect(self.exportTempData)
+        self.ui.humidityExportButton.clicked.connect(self.exportHumidityData)
+        self.ui.addEmailButton.clicked.connect(self.addEmail)
+        self.ui.removeEmailButton.clicked.connect(self.deleteEmail)
+
+    def updateTempChart(self, data):
         x = list(self.perdelta(datetime.today(), datetime.today() - timedelta(minutes=(len(data))), timedelta(minutes=1)))
         times = matplotlib.dates.date2num(x)
-        self.currentTimes = [time.strftime("%x %X") for time in x]
-        self.currentData = data
-        self.dc.graphData(times, data)
+        self.tempTimes = [time.strftime("%x %X") for time in x]
+        self.tempData = data
+        self.tempChart.graphData(times, data)
+
+    def updateHumidityChart(self, data):
+        x = list(self.perdelta(datetime.today(), datetime.today() - timedelta(minutes=(len(data))), timedelta(minutes=1)))
+        times = matplotlib.dates.date2num(x)
+        self.humidityTimes = [time.strftime("%x %X") for time in x]
+        self.humidityData = data
+        self.humidityChart.graphData(times, data)
+        if data[0] > self.alertHum and not self.alerted:
+            self.alerted = True
+
+    def sendAlert(self):
+        print "humidity too high!" #this needs to send an email
+        reply = QMessageBox.question(self, 'Warning',
+                    "Humidity too high", QMessageBox.Ok)
+        self.alerted = False
 
     def closeEvent(self, event):
         if(self.serialManager):
@@ -117,13 +188,14 @@ class MyMplCanvas(FigureCanvas):
         self.draw()
 
 class SerialManager:
-    def __init__(self, updateGraph):
+    def __init__(self, updateTempChart, updateHumChart):
         self.timer = QtCore.QTimer()
         self.queue = Queue.Queue()
         self.ser = None
         self.running = False
         self.thread = None
-        self.updateGraph = updateGraph
+        self.updateTempChart = updateTempChart
+        self.updateHumChart = updateHumChart
 
     def connect(self, location):
         if self.ser or self.running or self.thread:
@@ -151,23 +223,34 @@ class SerialManager:
                 msg = self.queue.get(0)
             except Queue.Empty: pass
             #print msg
-            if msg == "data":
-                while not self.queue.qsize() and self.running: # wait until the data arrives
-                    time.sleep(0.01)
-                try:
-                    self.getData(self.queue.get(0))
-                except Queue.Empty: pass
+            if msg == "temperatures":
+                self.updateTempChart(getArray())
+            if msg == "humidities":
+                self.updateHumChart(getArray())
 
         if not self.running:
             self.timer.stop()
             self.timer.timeout.disconnect()
 
+    def setTemp(self, num):
+        self.writeLine("setTemp")
+        self.writeLine(str(num))
+
+    def setHumidity(self, num):
+        self.writeLine("setMaxHumidity")
+        self.writeLine(str(num))
+
+    def getArray(self):
+        while not self.queue.qsize() and self.running: # wait until the data arrives
+            time.sleep(0.01)
+        try:
+            return self.queue.get(0).split(",")
+        except Queue.Empty:
+            return null
+
     def writeLine(self, msg):
         if self.ser:
             self.ser.write(msg + "\r\n")
-
-    def getData(self, msg):
-        self.updateGraph(msg.split(","))
 
     def endSerial(self):
         self.running = False
