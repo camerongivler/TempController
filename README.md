@@ -11,14 +11,18 @@
 **matplotlib:**
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;sudo apt-get install python-dev python-pip libfreetype6-dev qt5-default pyqt5-dev-tools
+
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;pip install matplotlib
 
 **Serial Communications:**
 
 You may need to run:
+
 `sudo chmod 666 /dev/ttyUSB0`
+
 ``sudo usermod -aG dialout `whoami` ``
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;in order to communicate with the Arduino
+
+in order to communicate with the Arduino
 
 ##How to upload to Arduino
 run `sudo arduino` in terminal and open Arduino/Arduino.ino file
@@ -38,5 +42,6 @@ sudo apt-get install arduino arduino-core
 pyuic5 tempcontroller.ui > ui_tempcontroller.py
 
 **Note:** You may need to install pyuic5
+
 sudo apt-get install pyuic5
 
