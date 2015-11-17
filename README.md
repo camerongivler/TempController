@@ -17,7 +17,7 @@
 
 You may need to run:
 `sudo chmod 666 /dev/ttyUSB0`
-`sudo usermod -aG dialout \`whoami\``
+`sudo usermod -aG dialout ``whoami```
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;in order to communicate with the Arduino
 
 ##How to upload to Arduino
