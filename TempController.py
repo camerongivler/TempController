@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
-import sys, random, Queue, matplotlib, threading, time, csv, serial, smtplib
+from __future__ import print_function, absolute_import
+import sys, random, queue, matplotlib, threading, time, csv, serial, smtplib
 from datetime import datetime, timedelta
 matplotlib.use("Qt5Agg")
 from PyQt5 import QtCore
@@ -43,20 +43,26 @@ class TempController(QWidget):
         self.alerted = False
         self.turnedOff = False
         self.alertHum = float('Inf')
+        self.alertTemp = float('Inf')
 
     @pyqtSlot()
     def set_temperature(self):
-        print "Temperature:", self.ui.tempSpinBox.value()
+        print("Temperature:", self.ui.tempSpinBox.value())
         self.serialManager.setTemp(self.ui.tempSpinBox.value())
 
     @pyqtSlot()
+    def set_warning_temp(self):
+        print("Alert Temperature:", self.ui.tempToleranceSpinBox.value())
+        self.alertTemp = self.ui.warningThresholdSpinBox.value()
+
+    @pyqtSlot()
     def set_warning_humidity(self):
-        print "Alert Humidity:", self.ui.warningThresholdSpinBox.value()
+        print("Alert Humidity:", self.ui.warningThresholdSpinBox.value())
         self.alertHum = self.ui.warningThresholdSpinBox.value()
 
     @pyqtSlot()
     def set_turn_off_humidity(self):
-        print "Turn off Humidity:", self.ui.turnOffThresholdSpinBox.value()
+        print("Turn off Humidity:", self.ui.turnOffThresholdSpinBox.value())
         self.serialManager.setHumidity(self.ui.turnOffThresholdSpinBox.value())
 
     @pyqtSlot()
@@ -68,7 +74,7 @@ class TempController(QWidget):
         serialLocation = self.ui.ConnectField.text()
         if not serialLocation:
             serialLocation = "/dev/ttyUSB0"
-        print "Connect to:", serialLocation
+        print("Connect to:", serialLocation)
         self.serialManager.connect(serialLocation);
 
     @pyqtSlot()
@@ -95,7 +101,7 @@ class TempController(QWidget):
         self.exportData(self.humidityTimes, self.humidityData, exportLocation)
 
     def exportData(self, times, data, exportLocation):
-        print "exporting to:", exportLocation
+        print("exporting to:", exportLocation)
         with open(exportLocation, 'wb') as csvfile:
             writer = csv.writer(csvfile, delimiter=',')
             writer.writerow(times)
@@ -112,20 +118,21 @@ class TempController(QWidget):
         self.ui.emailList.addItem(email)
 
     @pyqtSlot()
-    def deleteEmail(self):x
+    def deleteEmail(self):
         listItems=self.ui.emailList.selectedItems()
         for item in listItems:
            self.ui.emailList.takeItem(self.ui.emailList.row(item))
 
     def connect_signals(self):
         self.ui.tempSetButton.clicked.connect(self.set_temperature)
-        self.ui.warningThresholdButton.clicked.connect(self.set_warning_humidity)
+        self.ui.tempWarningButton.clicked.connect(self.set_warning_temp)
+        self.ui.humidityWarningButton.clicked.connect(self.set_warning_humidity)
         self.ui.turnOffThresholdButton.clicked.connect(self.set_turn_off_humidity)
         self.ui.connectButton.clicked.connect(self.connect_to_arduino)
-        self.ui.tempExportButton.clicked.connect(self.exportTempData)
-        self.ui.humidityExportButton.clicked.connect(self.exportHumidityData)
         self.ui.addEmailButton.clicked.connect(self.addEmail)
         self.ui.removeEmailButton.clicked.connect(self.deleteEmail)
+        self.ui.tempExportButton.clicked.connect(self.exportTempData)
+        self.ui.humidityExportButton.clicked.connect(self.exportHumidityData)
 
     def updateTempChart(self, data):
         x = list(self.perdelta(datetime.today(), datetime.today() - timedelta(minutes=(len(data))), timedelta(minutes=1)))
@@ -144,7 +151,7 @@ class TempController(QWidget):
             self.alerted = True
 
     def sendAlert(self):
-        print "humidity too high!" #this needs to send an email
+        print("humidity too high!") #this needs to send an email
         reply = QMessageBox.question(self, 'Warning',
                     "Humidity too high", QMessageBox.Ok)
         self.alerted = False
@@ -189,7 +196,7 @@ class MyMplCanvas(FigureCanvas):
 class SerialManager:
     def __init__(self, updateTempChart, updateHumChart):
         self.timer = QtCore.QTimer()
-        self.queue = Queue.Queue()
+        self.queue = queue.Queue()
         self.ser = None
         self.running = False
         self.thread = None
@@ -220,7 +227,7 @@ class SerialManager:
         while self.queue.qsize():
             try:
                 msg = self.queue.get(0)
-            except Queue.Empty: pass
+            except queue.Empty: pass
             #print msg
             if msg == "temperatures":
                 self.updateTempChart(getArray())
@@ -244,7 +251,7 @@ class SerialManager:
             time.sleep(0.01)
         try:
             return self.queue.get(0).split(",")
-        except Queue.Empty:
+        except queue.Empty:
             return null
 
     def writeLine(self, msg):
