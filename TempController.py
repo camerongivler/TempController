@@ -31,7 +31,7 @@ class TempController(QWidget):
 
         self.requestDataTimer = QtCore.QTimer()
         self.requestDataTimer.timeout.connect(self.requestData)
-        self.requestDataTimer.start(5000)
+        self.requestDataTimer.start(15000)
 
         self.connect_signals()
 
@@ -243,8 +243,8 @@ class TempController(QWidget):
             server.sendmail(FROM, TO, message)
             server.close()
             print('successfully sent email')
-        except:
-            print('failed to send email')
+        except Exception as e:
+            print( "Error failed to send email: %s" % str(e) )
 
 class MyMplCanvas(FigureCanvas):
     """Ultimately, this is a QWidget (as well as a FigureCanvasAgg, etc.)."""
