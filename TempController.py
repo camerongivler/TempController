@@ -1,7 +1,7 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 from __future__ import print_function, absolute_import
-import sys, random, queue, matplotlib, threading, time, csv, serial, smtplib
+import sys, random, queue, matplotlib, threading, time, csv, serial, smtplib, numpy as np
 from datetime import datetime, timedelta
 matplotlib.use("Qt5Agg")
 from PyQt5 import QtCore
@@ -21,13 +21,13 @@ class TempController(QWidget):
         self.ui = Ui_TempController()
         self.ui.setupUi(self)
 
-        self.tempChart = MyMplCanvas(self.ui.frame_2, 10, 10)
+        self.tempChart = MyMplCanvas(self.ui.tempTab, 10, 10)
         self.ui.verticalLayout_2.addWidget(self.tempChart)
 
-        self.humidityChart = MyMplCanvas(self.ui.frame_2, 10, 10)
+        self.humidityChart = MyMplCanvas(self.ui.humidityTab, 10, 10)
         self.ui.verticalLayout_5.addWidget(self.humidityChart)
 
-        self.serialManager = SerialManager(self.updateTempChart, self.updateHumidityChart)
+        self.serialManager = SerialManager(self.updateTempChart, self.updateHumChart)
 
         self.requestDataTimer = QtCore.QTimer()
         self.requestDataTimer.timeout.connect(self.requestData)
@@ -40,30 +40,36 @@ class TempController(QWidget):
         self.humidityData = []
         self.humidityTimes = []
 
-        self.alerted = False
-        self.turnedOff = False
+        self.humAlert = False
+        self.tempAlert = False
+        self.coolingOff = False
         self.alertHum = float('Inf')
+        self.turnOffHum = float('Inf')
+        self.setTemp = 2.5
         self.alertTemp = float('Inf')
 
     @pyqtSlot()
-    def set_temperature(self):
-        print("Temperature:", self.ui.tempSpinBox.value())
-        self.serialManager.setTemp(self.ui.tempSpinBox.value())
+    def set_warning_temp(self):
+        self.alertTemp = self.ui.tempToleranceSpinBox.value()
+        print("Alert Temperature:", self.alertTemp)
 
     @pyqtSlot()
-    def set_warning_temp(self):
-        print("Alert Temperature:", self.ui.tempToleranceSpinBox.value())
-        self.alertTemp = self.ui.warningThresholdSpinBox.value()
+    def set_temperature(self):
+        self.coolingOff = False
+        self.setTemp = self.ui.tempSpinBox.value()
+        self.serialManager.setTemp(self.setTemp)
+        print("Temperature:", self.setTemp)
 
     @pyqtSlot()
     def set_warning_humidity(self):
-        print("Alert Humidity:", self.ui.warningThresholdSpinBox.value())
         self.alertHum = self.ui.warningThresholdSpinBox.value()
+        print("Alert Humidity:", self.alertHum)
 
     @pyqtSlot()
     def set_turn_off_humidity(self):
-        print("Turn off Humidity:", self.ui.turnOffThresholdSpinBox.value())
-        self.serialManager.setHumidity(self.ui.turnOffThresholdSpinBox.value())
+        self.turnOffHum = self.ui.turnOffThresholdSpinBox.value()
+        print("Turn off Humidity:", self.turnOffHum)
+        self.serialManager.setHumidity(self.turnOffHum)
 
     @pyqtSlot()
     def connect_to_arduino(self):
@@ -75,7 +81,7 @@ class TempController(QWidget):
         if not serialLocation:
             serialLocation = "/dev/ttyUSB0"
         print("Connect to:", serialLocation)
-        self.serialManager.connect(serialLocation);
+        self.serialManager.connect(serialLocation)
 
     @pyqtSlot()
     def disconnect_from_arduino(self):
@@ -121,7 +127,7 @@ class TempController(QWidget):
     def deleteEmail(self):
         listItems=self.ui.emailList.selectedItems()
         for item in listItems:
-           self.ui.emailList.takeItem(self.ui.emailList.row(item))
+            self.ui.emailList.takeItem(self.ui.emailList.row(item))
 
     def connect_signals(self):
         self.ui.tempSetButton.clicked.connect(self.set_temperature)
@@ -140,21 +146,66 @@ class TempController(QWidget):
         self.tempTimes = [time.strftime("%x %X") for time in x]
         self.tempData = data
         self.tempChart.graphData(times, data)
+        if (data[0] > self.setTemp + self.alertTemp or data[0] < self.setTemp - self.alertTemp) and not self.tempAlert:
+            listItems = list(map(lambda it: it.text(), self.ui.emailList.findItems("", QtCore.Qt.MatchContains)))
+            self.sendTempAlert(listItems)
 
-    def updateHumidityChart(self, data):
+    def updateHumChart(self, data):
         x = list(self.perdelta(datetime.today(), datetime.today() - timedelta(minutes=(len(data))), timedelta(minutes=1)))
         times = matplotlib.dates.date2num(x)
         self.humidityTimes = [time.strftime("%x %X") for time in x]
         self.humidityData = data
         self.humidityChart.graphData(times, data)
-        if data[0] > self.alertHum and not self.alerted:
-            self.alerted = True
+        if data[0] > self.alertHum and not self.humAlert:
+            listItems = list(map(lambda it: it.text(), self.ui.emailList.findItems("", QtCore.Qt.MatchContains)))
+            self.sendHumAlert(listItems)
+        if data[0] > self.turnOffHum and not self.coolingOff:
+            listItems = list(map(lambda it: it.text(), self.ui.emailList.findItems("", QtCore.Qt.MatchContains)))
+            self.turnCoolingOff(listItems)
 
-    def sendAlert(self):
-        print("humidity too high!") #this needs to send an email
-        reply = QMessageBox.question(self, 'Warning',
-                    "Humidity too high", QMessageBox.Ok)
-        self.alerted = False
+    def sendTempAlert(self, listItems):
+        self.tempAlert = True
+        print("Temperature out of range")
+        self.send_email_to_all(listItems, "MIST ALERT: Laser temperature out of range", "Please check the laser as soon as possible. " +
+        "The laser temperature is outside of the specified range.")
+        self.createMessageBox("Temperature out of range", self.setTempAlertFalse)
+
+    def sendHumAlert(self, listItems):
+        self.humAlert = True
+        print("humidity warning")
+        self.send_email_to_all(listItems, "MIST ALERT: Laser humidity too high", "Please check the laser as soon as possible. " +
+        "The laser has reached its warning humidity and cooling will shut off soon.")
+        self.createMessageBox("Humidity too high. Cooler will be turned off soon!", self.setHumAlertFalse)
+
+    def turnCoolingOff(self, listItems):
+        self.coolingOff = True
+        print("Turning off cooling!")
+        self.ui.tempSpinBox.setValue(5)
+        self.set_turn_off_humidity()
+        self.send_email_to_all(listItems, "MIST ALERT: Laser cooling turned off!", "Please check the laser as soon as possible. " +
+        "The laser has reached its maximum humidity and cooling has been shut off.")
+        self.createMessageBox("Humidity too high.  Cooler has been turned off!", None)
+
+    def createMessageBox(self, msg, func):
+        reply = QMessageBox(self)
+        reply.setAttribute(QtCore.Qt.WA_DeleteOnClose)
+        reply.setStandardButtons(QMessageBox.Ok)
+        reply.setWindowTitle("Warning")
+        reply.setIcon(QMessageBox.Warning)
+        reply.setText(msg);
+        reply.setModal(False);
+        if func != None:
+            reply.destroyed.connect(func)
+        reply.show()
+        return reply
+
+    @pyqtSlot()
+    def setTempAlertFalse(self):
+        self.tempAlert = False
+
+    @pyqtSlot()
+    def setHumAlertFalse(self):
+        self.humAlert = False
 
     def closeEvent(self, event):
         if(self.serialManager):
@@ -165,6 +216,45 @@ class TempController(QWidget):
         while curr > end:
             yield curr
             curr -= delta
+
+    def send_email_to_all(self, listItems, subject, body):
+        for item in listItems:
+            print(item)
+            self.send_email(item, subject, body)
+
+    def send_email(self, recipient, subject, body):
+        import smtplib
+
+        gmail_user = 'elroy.jetson.mist@gmail.com'
+        gmail_pwd = 'Yb171+Yb171+'
+        FROM = gmail_user
+        TO = recipient if type(recipient) is list else [recipient]
+        SUBJECT = subject
+        TEXT = body
+
+        # Prepare actual message
+        message = """\From: %s\nTo: %s\nSubject: %s\n\n%s
+        """ % (FROM, ", ".join(TO), SUBJECT, TEXT)
+        try:
+            server = smtplib.SMTP("smtp.gmail.com", 587)
+            server.ehlo()
+            server.starttls()
+            server.login(gmail_user, gmail_pwd)
+            server.sendmail(FROM, TO, message)
+            server.close()
+            print('successfully sent email')
+        except:
+            print('failed to send email')
+
+class MyThread(QtCore.QThread):
+    def __init__(self, target, args):
+        QtCore.QThread.__init__(self)
+        self.target = target
+        self.args = args
+
+    def run(self):
+        self.target(*self.args)
+
 
 class MyMplCanvas(FigureCanvas):
     """Ultimately, this is a QWidget (as well as a FigureCanvasAgg, etc.)."""
@@ -207,11 +297,11 @@ class SerialManager:
         if self.ser or self.running or self.thread:
             self.endSerial()
 
-        #try:
-        self.ser = serial.Serial(location, 9600, timeout=0.5)
-        #except:
-        #    print "Could not open serial:", location
-        #    return False
+        try:
+            self.ser = serial.Serial(location, 9600, timeout=0.5)
+        except:
+            print("Could not open serial:", location)
+            return False
 
         self.timer.timeout.connect(self.periodicCall)
         self.timer.start(100)
@@ -228,11 +318,11 @@ class SerialManager:
             try:
                 msg = self.queue.get(0)
             except queue.Empty: pass
-            #print msg
-            if msg == "temperatures":
-                self.updateTempChart(getArray())
-            if msg == "humidities":
-                self.updateHumChart(getArray())
+            #print(msg)
+            if msg == 'temperatures':
+                self.updateTempChart(self.getArray())
+            if msg == 'humidities':
+                self.updateHumChart(self.getArray())
 
         if not self.running:
             self.timer.stop()
@@ -250,13 +340,13 @@ class SerialManager:
         while not self.queue.qsize() and self.running: # wait until the data arrives
             time.sleep(0.01)
         try:
-            return self.queue.get(0).split(",")
+            return list(map(float, self.queue.get(0).split(",")))
         except queue.Empty:
             return null
 
     def writeLine(self, msg):
         if self.ser:
-            self.ser.write(msg + "\r\n")
+            self.ser.write((msg + "\r\n").encode())
 
     def endSerial(self):
         self.running = False
@@ -266,7 +356,7 @@ class SerialManager:
 
     def workerThread(self):
         while self.running:
-            msg = self.ser.readline().rstrip()
+            msg = self.ser.readline().decode().rstrip()
             if msg:
                 self.queue.put(msg)
             else: pass
