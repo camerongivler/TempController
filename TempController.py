@@ -31,7 +31,6 @@ class TempController(QWidget):
 
         self.requestDataTimer = QtCore.QTimer()
         self.requestDataTimer.timeout.connect(self.requestData)
-        self.requestDataTimer.start(15000)
 
         self.connect_signals()
 
@@ -82,9 +81,12 @@ class TempController(QWidget):
             serialLocation = "/dev/ttyUSB0"
         print("Connect to:", serialLocation)
         self.serialManager.connect(serialLocation)
+        self.requestData()
+        self.requestDataTimer.start(15000)
 
     @pyqtSlot()
     def disconnect_from_arduino(self):
+        self.requestDataTimer.stop()
         if(self.serialManager):
             self.serialManager.endSerial()
         self.ui.connectButton.disconnect()
