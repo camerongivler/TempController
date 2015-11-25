@@ -246,16 +246,6 @@ class TempController(QWidget):
         except:
             print('failed to send email')
 
-class MyThread(QtCore.QThread):
-    def __init__(self, target, args):
-        QtCore.QThread.__init__(self)
-        self.target = target
-        self.args = args
-
-    def run(self):
-        self.target(*self.args)
-
-
 class MyMplCanvas(FigureCanvas):
     """Ultimately, this is a QWidget (as well as a FigureCanvasAgg, etc.)."""
     def __init__(self, parent=None, width=1, height=1, dpi=100):
