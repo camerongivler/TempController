@@ -68,7 +68,6 @@ class TempController(QWidget):
     def set_turn_off_humidity(self):
         self.turnOffHum = self.ui.turnOffThresholdSpinBox.value()
         print("Turn off Humidity:", self.turnOffHum)
-        self.serialManager.setHumidity(self.turnOffHum)
 
     @pyqtSlot()
     def connect_to_arduino(self):
@@ -322,10 +321,6 @@ class SerialManager:
 
     def setTemp(self, num):
         self.writeLine("setTemp")
-        self.writeLine(str(num))
-
-    def setHumidity(self, num):
-        self.writeLine("setMaxHumidity")
         self.writeLine(str(num))
 
     def getArray(self):

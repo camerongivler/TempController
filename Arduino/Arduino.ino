@@ -2,6 +2,7 @@ const unsigned long oneSecond = 1000;
 const unsigned long numSecsBetweenReads = 60;
 const unsigned long deltaSerialEvent = 100; // milliseconds
 const int tempPin = A0;
+const int tempSetPin = A2;
 const int humPin = A1;
 const int numValues = 120;
 float tempValues[numValues] = {
@@ -9,6 +10,7 @@ float tempValues[numValues] = {
 float humValues[numValues] = {
   0};
 String inputString = "";  //This is global in case serialEvent is called mid-transmission
+boolean getTemp;
 
 void setup() {
   Serial.begin(9600);
@@ -44,8 +46,9 @@ boolean serialEvent() {
       if(inputString == "get data\r\n") {
         sendTemperatures();
         sendHumidities();
-      }
-      // End Command Handle
+      } else if (inputString == "setTemp\r\n") {
+        setTemp(Serial.parseFloat());
+      }      // End Command Handle
       inputString = "";
       return true;
     }
@@ -72,5 +75,9 @@ void sendData(String str, float values[]) {
     Serial.print(values[i]);
   }
   Serial.println();
+}
+
+void setTemp(float num){
+  analogWrite(tempSetPin, num * 51);
 }
 
