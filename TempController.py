@@ -270,7 +270,7 @@ class MyMplCanvas(FigureCanvas):
         self.axes.plot_date(x, y, 'r')
         plt.gcf().autofmt_xdate()
         self.axes.xaxis.set_major_formatter(matplotlib.dates.DateFormatter('%I:%M'))
-        self.axes.set_xlabel("Minutes in the past")
+        self.axes.set_xlabel("Time of Measurement")
         self.axes.set_ylabel(self.label)
         self.axes.set_ylim([-5, 40])
         self.draw()
