@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'tempcontroller.ui'
 #
-# Created: Thu Dec 10 14:19:39 2015
+# Created: Thu Dec 10 20:37:24 2015
 #      by: PyQt5 UI code generator 5.2.1
 #
 # WARNING! All changes made in this file will be lost!
@@ -198,27 +198,6 @@ class Ui_TempController(object):
         self.verticalLayout_5.addItem(spacerItem17)
         self.tabWidget.addTab(self.humidityTab, "")
         self.horizontalLayout.addWidget(self.tabWidget)
-        self.frame = QtWidgets.QFrame(TempController)
-        self.frame.setMinimumSize(QtCore.QSize(150, 0))
-        self.frame.setMaximumSize(QtCore.QSize(175, 16777215))
-        self.frame.setFrameShape(QtWidgets.QFrame.NoFrame)
-        self.frame.setFrameShadow(QtWidgets.QFrame.Raised)
-        self.frame.setObjectName("frame")
-        self.verticalLayout = QtWidgets.QVBoxLayout(self.frame)
-        self.verticalLayout.setObjectName("verticalLayout")
-        spacerItem18 = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
-        self.verticalLayout.addItem(spacerItem18)
-        self.groupBox_2 = QtWidgets.QGroupBox(self.frame)
-        self.groupBox_2.setObjectName("groupBox_2")
-        self.verticalLayout_3 = QtWidgets.QVBoxLayout(self.groupBox_2)
-        self.verticalLayout_3.setObjectName("verticalLayout_3")
-        self.laserList = QtWidgets.QListWidget(self.groupBox_2)
-        self.laserList.setObjectName("laserList")
-        self.verticalLayout_3.addWidget(self.laserList)
-        self.verticalLayout.addWidget(self.groupBox_2)
-        spacerItem19 = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
-        self.verticalLayout.addItem(spacerItem19)
-        self.horizontalLayout.addWidget(self.frame)
 
         self.retranslateUi(TempController)
         self.tabWidget.setCurrentIndex(0)
@@ -251,5 +230,4 @@ class Ui_TempController(object):
         self.humidityExportField.setPlaceholderText(_translate("TempController", "humidityData.csv"))
         self.humidityExportButton.setText(_translate("TempController", "Export"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.humidityTab), _translate("TempController", "Humidity"))
-        self.groupBox_2.setTitle(_translate("TempController", "Lasers"))
 
