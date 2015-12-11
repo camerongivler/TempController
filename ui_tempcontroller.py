@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'tempcontroller.ui'
 #
-# Created: Tue Nov 24 15:41:18 2015
+# Created: Thu Dec 10 14:19:39 2015
 #      by: PyQt5 UI code generator 5.2.1
 #
 # WARNING! All changes made in this file will be lost!

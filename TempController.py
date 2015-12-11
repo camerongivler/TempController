@@ -21,10 +21,10 @@ class TempController(QWidget):
         self.ui = Ui_TempController()
         self.ui.setupUi(self)
 
-        self.tempChart = MyMplCanvas(self.ui.tempTab, 10, 10)
+        self.tempChart = MyMplCanvas(self.ui.tempTab, 10, 10, "Temperature reading (°C)")
         self.ui.verticalLayout_2.addWidget(self.tempChart)
 
-        self.humidityChart = MyMplCanvas(self.ui.humidityTab, 10, 10)
+        self.humidityChart = MyMplCanvas(self.ui.humidityTab, 10, 10, "Humidity reading (% humidity)")
         self.ui.verticalLayout_5.addWidget(self.humidityChart)
 
         self.serialManager = SerialManager(self.updateTempChart, self.updateHumChart)
@@ -249,11 +249,12 @@ class TempController(QWidget):
 
 class MyMplCanvas(FigureCanvas):
     """Ultimately, this is a QWidget (as well as a FigureCanvasAgg, etc.)."""
-    def __init__(self, parent=None, width=1, height=1, dpi=100):
+    def __init__(self, parent=None, width=1, height=1, label="Temperature reading (°C)", dpi=100):
         fig = Figure(dpi=dpi)
+        self.label = label
         self.axes = fig.add_subplot(111)
         self.axes.set_xlabel("Minutes in the past")
-        self.axes.set_ylabel("Voltage reading")
+        self.axes.set_ylabel(label)
         self.axes.hold(False)
         plt.gcf().subplots_adjust(bottom=0.25)
 
@@ -269,9 +270,9 @@ class MyMplCanvas(FigureCanvas):
         self.axes.plot_date(x, y, 'r')
         plt.gcf().autofmt_xdate()
         self.axes.xaxis.set_major_formatter(matplotlib.dates.DateFormatter('%I:%M'))
-        self.axes.set_xlabel("Time")
-        self.axes.set_ylabel("Voltage reading")
-        self.axes.set_ylim([0, 5])
+        self.axes.set_xlabel("Minutes in the past")
+        self.axes.set_ylabel(self.label)
+        self.axes.set_ylim([-5, 40])
         self.draw()
 
 class SerialManager:
@@ -343,9 +344,9 @@ class SerialManager:
 
     def workerThread(self):
         while self.running:
-            msg = self.ser.readline().decode().rstrip()
+            msg = self.ser.readline().decode()
             if msg:
-                self.queue.put(msg)
+                self.queue.put(msg.rstrip())
             else: pass
             time.sleep(0.1)
         self.ser.close()
