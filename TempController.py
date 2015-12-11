@@ -310,7 +310,6 @@ class SerialManager:
             try:
                 msg = self.queue.get(0)
             except queue.Empty: pass
-            #print(msg)
             if msg == 'temperatures':
                 self.updateTempChart(self.getArray())
             if msg == 'humidities':
