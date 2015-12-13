@@ -2,9 +2,11 @@
 ####Arduino Temperature Controller
 
 ##Dependencies
-**Python 2.7**
+**Python 3.0 and above**
 
 **PyQt5**
+
+On Windows, WinPython 3.4.3.6Qt5 contains all necessary dependencies
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;http://pyqt.sourceforge.net/Docs/PyQt5/installation.html
 
